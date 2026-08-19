@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+ENV/
+env/
+
+# Environment and Credentials
+.env
+.env.local
+.user_preferences.json
+
+# Local Scraped Vacantes and Personal CV Output
+vacantes/
+*.pdf
+*.tex
+
+# IDE and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

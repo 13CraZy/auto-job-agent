@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  auto-job-agent:
+    build: .
+    container_name: auto-job-agent
+    stdin_open: true
+    tty: true
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+    restart: "no"

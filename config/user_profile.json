@@ -1,0 +1,137 @@
+{
+  "personal_info": {
+    "name": "Felix Iñiguez Ortiz",
+    "title": "Software Engineer & IT Specialist",
+    "email": "felixcary13@gmail.com",
+    "phone": "646-132-8918",
+    "location": "Ensenada, B.C., México",
+    "github": "https://github.com/13Crazy",
+    "linkedin": "https://linkedin.com/in/felix-iñiguez"
+  },
+  "summary": "Ingeniero de Software y Especialista en Tecnologías de la Información enfocado en desarrollo Full Stack, Backend, Frontend y Soporte Técnico Avanzado. Especializado en diseñar arquitecturas SaaS multi-tenant, aplicaciones web con React, Vue.js y C# / .NET, sistemas distribuidos en tiempo real (WebSockets) y diagnóstico/resolución de incidencias técnicas en infraestructura local y cloud con alto rendimiento.",
+  "skills": {
+    "languages": [
+      "TypeScript",
+      "JavaScript",
+      "Python",
+      "C# (.NET Core)",
+      "SQL (PostgreSQL, SQLite, SQL Server)",
+      "Next.js (App Router)",
+      "React.js",
+      "Vue.js",
+      "Tailwind CSS",
+      "PWA"
+    ],
+    "backend": [
+      "Node.js",
+      "C# / .NET Core Web API",
+      "Python (FastAPI, Django)",
+      "RESTful APIs & GraphQL",
+      "Supabase",
+      "Firebase",
+      "Redis (Caching y Rate Limiting)",
+      "Arquitectura Multi-tenant",
+      "MQTT & Zigbee 3.0"
+    ],
+    "frontend": [
+      "Next.js (App Router)",
+      "React.js",
+      "Vue.js",
+      "Angular",
+      "Tailwind CSS",
+      "TypeScript",
+      "PWA"
+    ],
+    "database": [
+      "PostgreSQL",
+      "SQLite",
+      "SQL Server",
+      "Supabase",
+      "Redis"
+    ],
+    "devops_cloud": [
+      "Soporte Técnico Hardware & Redes",
+      "Diagnóstico de Sistemas y Troubleshooting",
+      "AWS",
+      "GCP",
+      "Túneles Cloudflare (Zero-Trust)",
+      "Docker",
+      "CI/CD",
+      "Git & GitHub",
+      "Husky",
+      "Vitest",
+      "Postman"
+    ]
+  },
+  "experience": [
+    {
+      "company": "Luxnode (Infraestructura SaaS para Gestión de Recursos)",
+      "role": "Arquitecto de Software y Cofundador",
+      "period": "Enero 2025 – Presente",
+      "location": "Ensenada, B.C., México",
+      "bullet_points": [
+        "Diseñé la arquitectura multi-tenant basada en módulos de dominio (Feature-First) en Next.js 14 y Supabase, configurando reglas estrictas de Row-Level Security (RLS) en PostgreSQL para asegurar el aislamiento total de datos.",
+        "Desarrollé microservicios locales para Edge Computing en Mini-PCs comunicados bajo protocolos Zigbee 3.0 y brokers MQTT, reduciendo la latencia de respuesta física a menos de 50ms con ejecución offline-first.",
+        "Programé un middleware de control de tasas (Rate Limiting) respaldado por ventanas deslizantes en Redis, protegiendo las APIs del servidor contra picos de tráfico malicioso e inyecciones de solicitudes externas.",
+        "Establecí una topología de red Zero-Trust sin apertura de puertos ni IPs estáticas en el router del cliente, canalizando la comunicación saliente mediante Túneles encriptados de Cloudflare (AES-256-GCM).",
+        "Automaticé un motor de sincronización que parsea flujos iCal (.ics) de plataformas externas cada 15 minutos mediante Vercel Cron Jobs para alimentar la máquina de estados de automatización de hardware."
+      ]
+    },
+    {
+      "company": "Analoa Spa (Sistema de Gestión Integral ERP/CRM)",
+      "role": "Ingeniero de Software Core y Freelancer",
+      "period": "Noviembre 2025 – Presente",
+      "location": "Ensenada, B.C., México",
+      "bullet_points": [
+        "Ingenieré un sistema integral PWA Mobile-First para control de inventarios y reservas en tiempo real mediante WebSockets, eliminando al 100% los costos mensuales en licencias de software de terceros.",
+        "Automaticé módulos de agendamiento inteligente y asignación automatizada de insumos médicos, reduciendo los tiempos muertos y mitigando a cero errores humanos en la asignación de cabinas.",
+        "Reforcé la privacidad de expedientes clínicos implementando autenticación multifactor (MFA) obligatoria y controles de cifrado en la presencia de bases de datos relacionales."
+      ]
+    },
+    {
+      "company": "App Oficial ITE",
+      "role": "Líder de Desarrollo Backend",
+      "period": "Agosto 2022 – Julio 2023",
+      "location": "Ensenada, B.C., México",
+      "bullet_points": [
+        "Lideré la migración completa de la infraestructura del servidor de Python a TypeScript/Node.js, implementando tipado estático y mejorando significativamente la escalabilidad y mantenibilidad del sistema."
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "name": "lux-ai-cli",
+      "tech_stack": "Node.js, TypeScript, Gemini API, Ollama, Vitest, Docker, Husky",
+      "period": "Enero 2026",
+      "bullet_points": [
+        "Desarrollé un binario global ejecutable que integra de forma híbrida la API de Gemini y modelos locales de Ollama para optimizar el flujo de desarrollo local (DX) de equipos de ingeniería mediante algoritmos LCS.",
+        "Diseñé un pre-commit scanner de seguridad DevSecOps integrado con Husky que analiza diferencias staged y bloquea la subida involuntaria de credenciales y secretos a repositorios públicos."
+      ]
+    },
+    {
+      "name": "Real-Time Collaborative Dashboard",
+      "tech_stack": "Next.js, Supabase Realtime, Tailwind CSS, Redis",
+      "period": "Mayo 2026",
+      "bullet_points": [
+        "Construí un panel colaborativo en tiempo real que sincroniza el estado de las tareas y métricas del proyecto bajo el protocolo de WebSockets nativo de Supabase Realtime con un sistema de bloqueo visual optimista.",
+        "Resolví bugs de desalineación visual de cursores compartidos mediante el mapeo dinámico de coordenadas de página absoluto (pageX/Y) en lugar de ventana, manteniendo consistencia en diferentes niveles de scroll."
+      ]
+    }
+  ],
+  "education": [
+    {
+      "institution": "Instituto Tecnológico de Ensenada (ITE)",
+      "degree": "Ingeniería en Sistemas Computacionales (Estudios Superiores - Licenciatura Trunca)",
+      "period": "Feb. 2023 – Mayo 2026"
+    },
+    {
+      "institution": "CBTis 41",
+      "degree": "Técnico en Programación (Bachillerato Tecnológico)",
+      "period": "2018 – 2021"
+    }
+  ],
+  "languages_spoken": [
+    { "language": "Spanish", "level": "Native" },
+    { "language": "English", "level": "Professional Technical Working Proficiency" }
+  ]
+}
