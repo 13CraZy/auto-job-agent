@@ -1,0 +1,80 @@
+{
+  "personal_info": {
+    "name": "Alex Mercer",
+    "title": "Senior Full Stack Engineer & Software Architect",
+    "email": "alex.mercer.dev@example.com",
+    "phone": "+52 55 1234 5678",
+    "location": "Ciudad de México, México",
+    "github": "https://github.com/example-candidate",
+    "linkedin": "https://linkedin.com/in/example-candidate"
+  },
+  "summary": "Ingeniero de Software con experiencia en diseño de arquitecturas cloud, microservicios, desarrollo Full Stack con React, Next.js, Node.js y Python. Enfoque en sistemas de alta disponibilidad, seguridad y optimización de rendimiento.",
+  "skills": {
+    "languages": [
+      "TypeScript",
+      "JavaScript",
+      "Python",
+      "SQL",
+      "HTML5 / CSS3"
+    ],
+    "backend": [
+      "Node.js",
+      "FastAPI / Python",
+      "RESTful APIs & GraphQL",
+      "PostgreSQL",
+      "Redis"
+    ],
+    "frontend": [
+      "React.js",
+      "Next.js",
+      "Tailwind CSS",
+      "TypeScript"
+    ],
+    "database": [
+      "PostgreSQL",
+      "Redis",
+      "SQLite"
+    ],
+    "devops_cloud": [
+      "Docker",
+      "AWS / GCP",
+      "CI/CD Pipelines",
+      "Git & GitHub"
+    ]
+  },
+  "experience": [
+    {
+      "company": "Tech Solutions Corp",
+      "role": "Senior Full Stack Engineer",
+      "period": "2023 – Presente",
+      "location": "Remoto",
+      "bullet_points": [
+        "Diseñé e implementé APIs RESTful de alto rendimiento en Node.js y FastAPI reduciendo la latencia de respuesta en un 35%.",
+        "Lideré la migración del frontend hacia Next.js 14 y Tailwind CSS mejorando la retención de usuarios y el SEO técnico.",
+        "Automaticé pipelines de integración y despliegue continuo (CI/CD) en GitHub Actions hacia infraestructura cloud contenerizada en Docker."
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "name": "Cloud Observability Platform",
+      "tech_stack": "Next.js, Python, Docker, Redis",
+      "period": "2025",
+      "bullet_points": [
+        "Desarrollé un dashboard interactivo de monitoreo en tiempo real para métricas de servicios distribuidos.",
+        "Implementé capas de caché distribuida en Redis optimizando el rendimiento de consultas frecuentes."
+      ]
+    }
+  ],
+  "education": [
+    {
+      "institution": "Universidad Tecnológica",
+      "degree": "Licenciatura / Ingeniería en Computación o Sistemas",
+      "period": "2019 – 2023"
+    }
+  ],
+  "languages_spoken": [
+    { "language": "Spanish", "level": "Native" },
+    { "language": "English", "level": "Professional Technical Working Proficiency" }
+  ]
+}

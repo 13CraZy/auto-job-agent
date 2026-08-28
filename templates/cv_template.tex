@@ -1,0 +1,63 @@
+\documentclass[10pt,a4paper]{article}
+\usepackage[margin=0.45in]{geometry}
+\usepackage{hyperref}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage{xcolor}
+
+\definecolor{primary}{RGB}{0, 0, 0}
+\definecolor{secondary}{RGB}{40, 40, 40}
+\definecolor{linkcolor}{RGB}{0, 0, 0}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=linkcolor,
+    urlcolor=linkcolor,
+}
+
+\titleformat{\section}{\large\bfseries\color{primary}}{}{0em}{}[\titlerule]
+\titlespacing*{\section}{0pt}{6pt}{3pt}
+
+\setlist[itemize]{leftmargin=*,noitemsep,topsep=1pt,parsep=0pt,partopsep=0pt}
+
+\pagestyle{empty}
+
+\begin{document}
+
+% ENCABEZADO
+\begin{center}
+    {\Huge \bfseries {{ PERSONAL_NAME }}}\\[3pt]
+    \small {{ PERSONAL_PHONE }} $|$ \href{mailto:{{ PERSONAL_EMAIL }}}{{{ PERSONAL_EMAIL }}} $|$ \href{{{ PERSONAL_LINKEDIN }}}{LinkedIn} $|$ \href{{{ PERSONAL_GITHUB }}}{GitHub}\\[2pt]
+\end{center}
+
+\vspace{-6pt}
+
+% RESUMEN PROFESIONAL
+\section*{{{ SECTION_SUMMARY_TITLE }}}
+\small {{ PROFESSIONAL_SUMMARY }}
+
+% HABILIDADES TÉCNICAS
+\section*{{{ SECTION_SKILLS_TITLE }}}
+\begin{itemize}
+    \item \small \textbf{{{ SKILL_CAT_LANG }}:} {{ SKILLS_LANGUAGES }}
+    \item \small \textbf{{{ SKILL_CAT_BACKEND }}:} {{ SKILLS_BACKEND }}
+    \item \small \textbf{{{ SKILL_CAT_FRONTEND }}:} {{ SKILLS_FRONTEND }}
+    \item \small \textbf{{{ SKILL_CAT_DATABASE }}:} {{ SKILLS_DATABASE }}
+    \item \small \textbf{{{ SKILL_CAT_DEVOPS }}:} {{ SKILLS_DEVOPS }}
+\end{itemize}
+
+% EXPERIENCIA PROFESIONAL
+\section*{{{ SECTION_EXPERIENCE_TITLE }}}
+{{ EXPERIENCES_BLOCK }}
+
+% PROYECTOS TECNOLÓGICOS CORE
+\section*{{{ SECTION_PROJECTS_TITLE }}}
+{{ PROJECTS_BLOCK }}
+
+% EDUCACIÓN
+\section*{{{ SECTION_EDUCATION_TITLE }}}
+\begin{itemize}
+{{ EDUCATION_BLOCK }}
+\end{itemize}
+
+\end{document}

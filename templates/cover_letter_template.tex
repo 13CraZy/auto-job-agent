@@ -1,0 +1,42 @@
+\documentclass[11pt,a4paper]{article}
+\usepackage[margin=0.6in]{geometry}
+\usepackage{hyperref}
+\usepackage{xcolor}
+
+\definecolor{primary}{RGB}{15, 23, 42}
+\definecolor{secondary}{RGB}{51, 65, 85}
+\definecolor{linkcolor}{RGB}{37, 99, 235}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=linkcolor,
+    urlcolor=linkcolor,
+}
+
+\pagestyle{empty}
+
+\begin{document}
+
+% ENCABEZADO
+\begin{center}
+    {\Huge \bfseries \color{primary} {{ PERSONAL_NAME }}}\\[3pt]
+    {\large \color{secondary} {{ PERSONAL_TITLE }}}\\[4pt]
+    \small {{ PERSONAL_PHONE }} $|$ \href{mailto:{{ PERSONAL_EMAIL }}}{{{ PERSONAL_EMAIL }}} $|$ \href{{{ PERSONAL_LINKEDIN }}}{LinkedIn} $|$ \href{{{ PERSONAL_GITHUB }}}{GitHub}\\[2pt]
+\end{center}
+
+\vspace{10pt}
+\hrule
+\vspace{15pt}
+
+\noindent \textbf{{{ DATE_STR }}}\\[10pt]
+\noindent \textbf{{{ HIRING_TITLE }}}\\
+\noindent \textbf{{{ COMPANY_NAME }}}\\[15pt]
+
+\noindent {{ COVER_LETTER_BODY }}
+
+\vspace{25pt}
+\noindent {{ CLOSING_SALUTATION }},\\[20pt]
+\noindent \textbf{{{ PERSONAL_NAME }}}\\
+\noindent {{ PERSONAL_TITLE }}
+
+\end{document}
