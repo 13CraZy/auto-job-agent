@@ -58,18 +58,19 @@ TU TAREA:
 Genera una lista de 6 a 10 términos de búsqueda y sinónimos directos (tanto en ESPAÑOL como en INGLÉS) que usan los reclutadores en bolsas de trabajo como LinkedIn, Computrabajo, Indeed y GetOnBoard.
 
 REGLAS:
-1. Incluye combinaciones comunes (ejemplo: si busca 'Backend', incluye 'Desarrollador Backend', 'Backend Developer', 'Ingeniero de Software Backend', 'Backend Node.js', etc.).
+1. Incluye combinaciones comunes específicas (ejemplo: 'Desarrollador TypeScript', 'Desarrollador Python', 'Desarrollador Angular', 'Frontend React', 'Backend Node.js', 'Full Stack TypeScript', 'FastAPI Developer').
 2. Deben ser términos cortos y directos para usar en un buscador (2 a 4 palabras por término).
 3. Devuelve EXCLUSIVAMENTE un JSON válido con la clave 'keywords' como un array de strings.
+4. NUNCA incluyas términos de Java, Spring Boot, .NET, C#, PHP ni Cobol a menos que el usuario lo pida explícitamente. Prioriza siempre TypeScript, JavaScript, Python, Angular, React, Next.js y Node.js.
 
 Ejemplo de formato:
 {{
   "keywords": [
-    "Desarrollador Full Stack",
-    "Full Stack Developer",
-    "Desarrollador Backend",
-    "Backend Engineer",
-    "Software Engineer"
+    "Desarrollador Full Stack TypeScript",
+    "Desarrollador Python FastAPI",
+    "Desarrollador Frontend React",
+    "Desarrollador Angular",
+    "Backend Node.js Developer"
   ]
 }}"""
 

@@ -241,3 +241,25 @@ DISALLOWED_ROLE_TRAPS = [
     r"\b(?:reclutador|recursos\s+humanos|auxiliar\s+de\s+rh|talent\s+acquisition)\b",
     r"\b(?:almacenista|montacarguista|chofer|repartidor|contador|abogado|enfermero|medico|cajero)\b"
 ]
+
+# ─── TRAMPAS DE STACKS INCOMPATIBLES (JAVA, .NET, PHP, C#) ───────────
+INCOMPATIBLE_STACK_TRAPS = [
+    # Ecosistema Java y Spring
+    r"(?:^|[\s\b,;/(])(?:java|spring\s*boot|spring\s*framework|spring\s*cloud|jakarta|jee|j2ee|hibernate|quarkus|micronaut|struts)(?:[\s\b,;/).-]|$)",
+    # Ecosistema .NET, C# y Microsoft Desktop (.net, c#, csharp, vb.net)
+    r"(?:^|[\s\b,;/(])(?:\.net|dotnet|c#|csharp|asp\.net|aspnet|\.net\s*core|vb\.net|blazor|entity\s*framework|winforms|wpf)(?:[\s\b,;/).-]|$)",
+    # Ecosistema PHP
+    r"(?:^|[\s\b,;/(])(?:php|laravel|symfony|wordpress|codeigniter|drupal|magento|zend)(?:[\s\b,;/).-]|$)",
+    # Tecnologías Legacy / ERP / CRM específico
+    r"(?:^|[\s\b,;/(])(?:cobol|as400|mainframes?|rpg|abap|salesforce|apex)(?:[\s\b,;/).-]|$)",
+    # Ruby
+    r"(?:^|[\s\b,;/(])(?:ruby\s+on\s+rails|ruby)(?:[\s\b,;/).-]|$)",
+    # C/C++ Embebido (cuando no es Web)
+    r"(?:^|[\s\b,;/(])(?:c\+\+|embedded\s+c|objective-c)(?:[\s\b,;/).-]|$)"
+]
+
+# Tecnologías prioritarias del candidato para preservar roles que combinen tecnologías
+CORE_PREFERRED_TECH_PATTERNS = [
+    r"\b(?:typescript|javascript|python|angular|react|next\.?js|node\.?js|fastapi|express|vue|supabase|web\s*developer|full\s*stack|frontend|desarrollador\s+web)\b"
+]
+

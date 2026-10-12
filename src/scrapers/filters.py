@@ -233,6 +233,41 @@ def is_disallowed_non_software_role(title: str, text: str = "") -> bool:
     return False
 
 # ============================================================
+# EXPRESIONES PARA DESCARTAR STACKS NO AFINES (JAVA, .NET, PHP, C#)
+# ============================================================
+INCOMPATIBLE_STACK_PATTERNS = [
+    r"(?:^|[\s\b,;/(])(?:java|spring\s*boot|spring\s*framework|spring\s*cloud|jakarta|jee|j2ee|hibernate|quarkus)(?:[\s\b,;/).-]|$)",
+    r"(?:^|[\s\b,;/(])(?:\.net|dotnet|c#|csharp|asp\.net|aspnet|\.net\s*core|vb\.net|blazor)(?:[\s\b,;/).-]|$)",
+    r"(?:^|[\s\b,;/(])(?:php|laravel|symfony|wordpress|codeigniter|drupal|magento)(?:[\s\b,;/).-]|$)",
+    r"(?:^|[\s\b,;/(])(?:cobol|as400|mainframes?|abap|salesforce|apex)(?:[\s\b,;/).-]|$)",
+    r"(?:^|[\s\b,;/(])(?:ruby\s+on\s+rails|ruby)(?:[\s\b,;/).-]|$)"
+]
+
+PREFERRED_TECH_PATTERNS = [
+    r"\b(?:typescript|javascript|python|angular|react|next\.?js|node\.?js|fastapi|express|vue|full\s*stack|frontend|desarrollador\s+web)\b"
+]
+
+def is_incompatible_stack_role(title: str, text: str = "") -> bool:
+    """
+    Detecta si la vacante está centrada en stacks no afines (Java, .NET, C#, PHP)
+    sin requerir tecnologías prioritarias del candidato (TypeScript, JavaScript, Python, Angular, React, Node.js).
+    """
+    title_lower = title.lower()
+    text_lower = f"{title_lower} {text.lower()[:1000]}"
+
+    has_incompatible_title = any(re.search(p, title_lower) for p in INCOMPATIBLE_STACK_PATTERNS)
+    has_preferred_title = any(re.search(p, title_lower) for p in PREFERRED_TECH_PATTERNS)
+    if has_incompatible_title and not has_preferred_title:
+        return True
+
+    has_incompatible_body = any(re.search(p, text_lower) for p in INCOMPATIBLE_STACK_PATTERNS)
+    has_preferred_body = any(re.search(p, text_lower) for p in PREFERRED_TECH_PATTERNS)
+    if has_incompatible_body and not has_preferred_body:
+        return True
+
+    return False
+
+# ============================================================
 # EXPRESIONES PARA DESCARTAR SOPORTE DE HARDWARE PURO
 # PATTERNS TO DISCARD PURE HARDWARE SUPPORT
 # ============================================================
@@ -448,6 +483,10 @@ def should_include_job(
 
     # 0.5. Descarta puestos no deseados en 0ms / Discards non-software roles in 0ms
     if is_disallowed_non_software_role(title, full_text):
+        return False
+
+    # 0.6. Descarta vacantes centradas en Java, .NET, C#, PHP (stack no afín al perfil)
+    if is_incompatible_stack_role(title, full_text):
         return False
 
     # 1. Descarta soporte hardware puro / Discards pure hardware support

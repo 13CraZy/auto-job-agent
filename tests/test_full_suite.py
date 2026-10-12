@@ -206,6 +206,60 @@ class TestJobJevEngine(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(res.is_match_for_user)
         self.assertIn("inglés avanzado", res.rejection_reason.lower())
 
+    async def test_reject_java_spring_boot_role(self):
+        job = {
+            "title": "Desarrollador Java Spring Boot",
+            "company": "Enterprise Bank",
+            "location": "Remoto",
+            "description": "Buscamos Desarrollador Java Senior con experiencia en Spring Boot, Hibernate, microservicios y SQL.",
+            "url": "https://example.com/job/java",
+            "source": "Indeed"
+        }
+        res = await self.engine.evaluate_job(job)
+        self.assertFalse(res.is_match_for_user)
+        self.assertIn("incompatible", res.rejection_reason.lower())
+
+    async def test_reject_dotnet_csharp_role(self):
+        job = {
+            "title": "Desarrollador .NET C# Sr",
+            "company": "Corporativo Seguros",
+            "location": "Remoto",
+            "description": "Experiencia indispensable en C#, .NET Core, ASP.NET y Entity Framework.",
+            "url": "https://example.com/job/dotnet",
+            "source": "Computrabajo"
+        }
+        res = await self.engine.evaluate_job(job)
+        self.assertFalse(res.is_match_for_user)
+        self.assertIn("incompatible", res.rejection_reason.lower())
+
+    async def test_accept_angular_typescript_role(self):
+        job = {
+            "title": "Desarrollador Frontend Angular",
+            "company": "SaaS Platform LATAM",
+            "location": "Remoto",
+            "description": "Desarrollo con Angular 17+, TypeScript, Signals, Tailwind CSS y consumo de APIs REST.",
+            "url": "https://example.com/job/angular",
+            "source": "LinkedIn"
+        }
+        res = await self.engine.evaluate_job(job)
+        self.assertTrue(res.is_match_for_user)
+        self.assertTrue(any("angular" in s.lower() for s in res.matched_skills))
+        self.assertGreaterEqual(res.match_percentage, 65)
+
+    async def test_accept_python_fastapi_role(self):
+        job = {
+            "title": "Backend Developer Python",
+            "company": "Fintech Solutions",
+            "location": "Remoto",
+            "description": "Construcción de APIs con Python, FastAPI, PostgreSQL y Docker.",
+            "url": "https://example.com/job/python-fastapi",
+            "source": "GetOnBoard"
+        }
+        res = await self.engine.evaluate_job(job)
+        self.assertTrue(res.is_match_for_user)
+        self.assertIn("Python", res.matched_skills)
+        self.assertGreaterEqual(res.match_percentage, 70)
+
 
 class TestIndeedDeduplication(unittest.TestCase):
     """Verifica que la deduplicación de Indeed no colapse a /rc/clk."""

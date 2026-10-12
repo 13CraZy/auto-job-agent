@@ -23,7 +23,9 @@ from src.jev.primitives import (
     normalize_text,
     MODALITY_REJECTION_TRAPS,
     LANGUAGE_C1_TRAPS,
-    DISALLOWED_ROLE_TRAPS
+    DISALLOWED_ROLE_TRAPS,
+    INCOMPATIBLE_STACK_TRAPS,
+    CORE_PREFERRED_TECH_PATTERNS
 )
 from src.scrapers.filters import (
     is_foreign_country_job,
@@ -43,6 +45,27 @@ class JobJevEngine:
     def __init__(self):
         self.user_profile = self._load_user_profile()
         self.skills_pool = self._extract_skills_pool()
+        self.skill_weights = {
+            "TypeScript": 3.5,
+            "JavaScript": 3.0,
+            "Python": 3.5,
+            "Angular": 3.5,
+            "React": 3.5,
+            "Next.js": 3.5,
+            "Node.js": 3.5,
+            "FastAPI": 3.0,
+            "Express": 2.5,
+            "PostgreSQL": 2.5,
+            "Supabase": 2.5,
+            "Tailwind CSS": 2.0,
+            "WebSockets": 2.5,
+            "Docker": 2.0,
+            "Redis": 2.0,
+            "SQL": 1.5,
+            "Git": 1.0,
+            "AWS": 1.5,
+            "Full Stack": 2.5
+        }
         self.system2_agent = AITriageAgent()
 
     def _load_user_profile(self) -> Dict[str, Any]:
@@ -67,7 +90,7 @@ class JobJevEngine:
         # Fallback si el perfil está vacío
         if not pool:
             pool = [
-                "TypeScript", "JavaScript", "React", "Next.js", "Node.js", "Python",
+                "TypeScript", "JavaScript", "Python", "Angular", "React", "Next.js", "Node.js",
                 "FastAPI", "Express", "PostgreSQL", "Supabase", "SQL", "Docker",
                 "Tailwind CSS", "WebSockets", "Redis", "Git", "REST APIs", "Full Stack"
             ]
@@ -142,6 +165,42 @@ class JobJevEngine:
                 is_match_for_user=False,
                 match_percentage=15,
                 rejection_reason=f"Rol no relacionado con desarrollo de software ({noul_reason})",
+                role_category="Otro"
+            )
+
+        # ------------------------------------------------------------
+        # CABEZAL 1.3: FILTRADO DE STACKS INCOMPATIBLES (JAVA / .NET / PHP / C#)
+        # ------------------------------------------------------------
+        has_stack_trap_title, _, trap_trigger_title = noul(title, INCOMPATIBLE_STACK_TRAPS)
+        has_preferred_tech_title, _, _ = noul(title, CORE_PREFERRED_TECH_PATTERNS)
+
+        # Regla A: Título explícito de Java, .NET, C#, PHP sin mencionar tecnologías preferidas
+        if has_stack_trap_title and not has_preferred_tech_title:
+            return JobTriageResult(
+                is_software_role=True,
+                real_modality="REMOTE" if "remoto" in location.lower() or "remote" in location.lower() else "UNKNOWN",
+                workplace_location=location,
+                company_name=company,
+                detected_language="SPANISH",
+                is_match_for_user=False,
+                match_percentage=20,
+                rejection_reason=f"Puesto enfocado en tecnología incompatible ({trap_trigger_title}) no afín al perfil del usuario",
+                role_category="Otro"
+            )
+
+        # Regla B: Descripción centrada en Java/.NET/PHP sin requerir el stack principal del usuario
+        has_stack_trap_body, _, trap_trigger_body = noul(description[:1200], INCOMPATIBLE_STACK_TRAPS)
+        has_preferred_tech_body, _, _ = noul(f"{title} {description}", CORE_PREFERRED_TECH_PATTERNS)
+        if has_stack_trap_body and not has_preferred_tech_body:
+            return JobTriageResult(
+                is_software_role=True,
+                real_modality="REMOTE" if "remoto" in location.lower() or "remote" in location.lower() else "UNKNOWN",
+                workplace_location=location,
+                company_name=company,
+                detected_language="SPANISH",
+                is_match_for_user=False,
+                match_percentage=25,
+                rejection_reason=f"Puesto enfocado en tecnología incompatible ({trap_trigger_body}) sin requerir TypeScript, Python, Angular o JavaScript",
                 role_category="Otro"
             )
 
@@ -228,7 +287,7 @@ class JobJevEngine:
         # ------------------------------------------------------------
         # CABEZAL 4: AFINIDAD TÉCNICA Y CATEGORÍA DE ROL (SCORE JEV)
         # ------------------------------------------------------------
-        match_score_val, tech_confidence, matched_skills = score(combined_text, self.skills_pool)
+        match_score_val, tech_confidence, matched_skills = score(combined_text, self.skills_pool, weights=self.skill_weights)
 
         # Validación estricta de pertenencia al dominio de software
         SOFTWARE_TITLE_PATTERNS = [
