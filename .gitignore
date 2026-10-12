@@ -12,6 +12,7 @@ env/
 .env.*
 .user_preferences.json
 config/user_profile.json
+config/processed_jobs.json
 
 # Local Scraped Vacantes and Personal CV Output
 vacantes/
@@ -19,7 +20,10 @@ vacantes/
 vacantes/*.tex
 !templates/*.tex
 *.log
-test_*.py
+!tests/
+!tests/*.py
+**/__pycache__/
+*.pyc
 
 # IDE and OS
 .vscode/

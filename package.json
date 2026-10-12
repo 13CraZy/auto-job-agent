@@ -1,0 +1,11 @@
+{
+  "name": "auto-job-agent",
+  "version": "6.0.0",
+  "description": "Universal AI Job Hunter v6.0",
+  "main": "main.py",
+  "scripts": {
+    "start": "python main.py",
+    "dev": "python main.py",
+    "auto": "python main.py --auto"
+  }
+}

@@ -32,15 +32,17 @@ DISALLOWED_ROLES_PATTERNS = [
     # Ventas / Sales / Commercial
     r"ejecutivo\s+de\s+ventas", r"ejecutiva\s+de\s+ventas", r"vendedor", r"vendedora",
     r"agente\s+comercial", r"ejecutivo\s+comercial", r"account\s+executive", r"business\s+development",
-    r"ejecutivo\s+de\s+cuenta", r"soporte\s+de\s+ventas", r"prospecci[oó]n",
+    r"ejecutivo\s+de\s+cuenta", r"soporte\s+de\s+ventas", r"prospecci[oó]n", r"preventa", r"agente\s+de\s+preventa",
     # SEO / Marketing Digital / Web Traffic / Social Media / Diseño Gráfico Puro
     r"posicionamiento\s+org[aá]nico", r"tr[aá]fico\s+web", r"especialista\s+seo", r"seo\s+specialist",
     r"marketing\s+digital", r"community\s+manager", r"growth\s+hacker", r"social\s+media",
     r"creative\s+designer", r"dise[ñn]ador\s+gr[aá]fico", r"graphic\s+designer",
     r"dise[ñn]ador\s+multimedia", r"content\s+creator", r"creador\s+de\s+contenido",
+    r"trafficker", r"pautas",
     # Hardware / Fibra Optica / Physical Networking
     r"fibra\s+[oó]ptica", r"t[eé]cnico\s+de\s+fibra", r"cableado\s+estructurado", r"instalador\s+de\s+redes",
     r"t[eé]cnico\s+de\s+campo", r"instalador\s+cctv", r"mantenimiento\s+f[ií]sico",
+    r"instalador\s+t[eé]cnico", r"bajantes",
     # Reclutamiento / Recursos Humanos / HR
     r"reclutador", r"reclutadora", r"recursos\s+humanos", r"talent\s+acquisition", r"auxiliar\s+de\s+rh",
     # Otras ingenierías no software / Operaciones físicas / Logística
@@ -324,12 +326,15 @@ def detect_job_modality(job: Dict[str, Any], user_local_keywords: List[str] = No
     modality_field = str(job.get("modality", "")).lower()
     full_text = f"{title} {description} {location} {modality_field}"
 
-    # 1. Chequeo de Presencial Local en Baja California / Local city check
-    if not user_local_keywords:
-        user_local_keywords = ["ensenada", "tijuana", "mexicali", "tecate", "rosarito", "baja california", "b.c."]
-    clean_user_keywords = [k.strip().lower() for k in user_local_keywords if len(k.strip()) > 2]
+    # 1. Chequeo de Presencial Local en la ciudad/estado del candidato / Local city check
+    if user_local_keywords:
+        clean_user_keywords = [k.strip().lower() for k in user_local_keywords if len(k.strip()) > 2]
+    else:
+        clean_user_keywords = []
 
-    is_local_city = any(kw in location for kw in clean_user_keywords) or any(kw in title for kw in clean_user_keywords)
+    is_local_city = bool(clean_user_keywords) and (
+        any(kw in location for kw in clean_user_keywords) or any(kw in title for kw in clean_user_keywords)
+    )
 
     # 2. Detección de Híbrido (Presencial + Remoto)
     hybrid_indicators = [
@@ -341,16 +346,21 @@ def detect_job_modality(job: Dict[str, Any], user_local_keywords: List[str] = No
     ]
     is_hybrid = any(ind in full_text for ind in hybrid_indicators)
 
-    # 3. Detección de ciudades foráneas fuera de Baja California
-    other_cities = [
+    # 3. Detección de ciudades foráneas en México (fuera de la ciudad del candidato)
+    all_mexican_cities = [
         "cdmx", "ciudad de méxico", "ciudad de mexico", "alvaro obregon", "álvaro obregón", 
         "miguel hidalgo", "cuauhtemoc", "cuauhtémoc", "tlalpan", "benito juarez", "benito juárez", 
         "azcapotzalco", "santa fe", "polanco", "insurgentes", "zapopan", "guadalajara", 
         "monterrey", "san pedro", "querétaro", "queretaro", "puebla", "mérida", "merida", 
         "león", "leon", "cancún", "cancun", "veracruz", "jalisco", "nuevo león", "nuevo leon", 
         "estado de méxico", "estado de mexico", "edomex", "naucalpan", "tlalnepantla", "atizapan", 
-        "atizapán", "toluca", "chihuahua", "sonora", "hermosillo", "sinaloa", "culiacan", "aguascalientes"
+        "atizapán", "toluca", "chihuahua", "sonora", "hermosillo", "sinaloa", "culiacan", "aguascalientes",
+        "tijuana", "mexicali", "ensenada", "rosarito", "tecate", "baja california", "b.c.",
+        "morelia", "michoacán", "michoacan", "san luis potosí", "san luis potosi", "cuernavaca",
+        "morelos", "saltillo", "coahuila", "torreón", "torreon", "villahermosa", "tabasco"
     ]
+    # Ciudades foráneas: todas las urbes mexicanas excluyendo la localidad propia del usuario
+    other_cities = [c for c in all_mexican_cities if not any(kw in c or c in kw for kw in clean_user_keywords)]
     is_in_other_city = any(city in location for city in other_cities)
 
     # 4. Indicadores de 100% Remoto explícito e indiscutible
@@ -366,13 +376,13 @@ def detect_job_modality(job: Dict[str, Any], user_local_keywords: List[str] = No
     if is_hybrid:
         return "onsite_local" if is_local_city else "onsite_relocate"
 
-    # Si está ubicado físicamente en Ensenada / Tijuana / Baja California:
+    # Si está ubicado físicamente en la ciudad/estado local del usuario:
     if is_local_city:
         if has_strict_remote_clause and "presencial" not in full_text:
             return "remote"
         return "onsite_local"
 
-    # Si está ubicado en otra ciudad (CDMX, Monterrey, Guadalajara, etc.):
+    # Si está ubicado en otra ciudad foránea (CDMX, Monterrey, Guadalajara, etc.):
     if is_in_other_city:
         # SOLO es remoto si explícitamente dice 100% remoto / desde casa y NO menciona asistencia presencial
         if has_strict_remote_clause and not any(p in full_text for p in ["presencial", "en oficina", "asistir", "híbrido", "hibrido"]):
@@ -411,9 +421,9 @@ def is_within_days(posted_at: Any, max_days: int = 3) -> bool:
 
 def should_include_job(
     job: Dict[str, Any],
-    max_hours: float = 48.0,
+    max_hours: float = 168.0,
     modality_pref: str = "Remoto y Presencial en mi Ciudad",
-    user_location: str = "Ensenada, Tijuana, Baja California",
+    user_location: str = "Ciudad de México, México",
     min_salary_relocate: float = 30000.0,
     english_level: str = "Español / Básico"
 ) -> bool:
@@ -422,8 +432,8 @@ def should_include_job(
     1. Debe ser puesto tecnico de desarrollo de software (descarta ventas, docencia, SEO, RH en 0ms).
     2. Descarta vacantes locales presenciales de otros paises (Argentina, Chile, Colombia, Peru, Espana, etc.).
     3. Si exige ingles avanzado/fluido/C1/C2 -> DESCARTA (solo permite espanol o ingles intermedio/tecnico).
-    4. Si es en Baja California -> PASA DIRECTO (presencial, hibrido o remoto).
-    5. Si es fuera de Baja California -> SOLO PASA SI ES 100% REMOTO PARA MEXICO / LATAM (descarta hibridos y presenciales foraneos).
+    4. Si es en la ciudad local del candidato -> PASA DIRECTO (presencial, hibrido o remoto).
+    5. Si es fuera de su ciudad -> SOLO PASA SI ES 100% REMOTO PARA MEXICO / LATAM (descarta hibridos y presenciales foraneos).
 
     Master post-scraping filter enforcing strict user criteria.
     """
@@ -457,15 +467,18 @@ def should_include_job(
     local_keywords = [k.strip() for k in user_location.replace(";", ",").split(",") if k.strip()]
     modality = detect_job_modality(job, user_local_keywords=local_keywords)
 
-    # Si es local en Baja California -> PASA DIRECTO / Local BC passes
+    if modality_pref == "Solo Remoto":
+        return modality == "remote"
+
+    # Si es local en la ciudad del usuario -> PASA DIRECTO / Local city passes
     if modality == "onsite_local":
         return True
 
-    # Si es fuera de Baja California: SOLO pasa si es 100% REMOTO / Outside BC MUST be 100% remote
+    # Si es fuera de su ciudad: SOLO pasa si es 100% REMOTO / Outside local city MUST be 100% remote
     if modality == "remote":
         return True
 
-    # Si es hibrido fuera de Baja California ("presencial y remoto") o presencial foraneo -> DESCARTA
+    # Si es hibrido fuera de su ciudad ("presencial y remoto") o presencial foraneo -> DESCARTA
     if modality in ["hybrid", "onsite_relocate", "unknown"]:
         return False
 

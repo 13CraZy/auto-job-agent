@@ -15,17 +15,19 @@ class IndeedPlaywrightScraper:
         self,
         keywords: List[str] = None,
         max_hours: float = 72.0,
-        user_location: str = "Baja California, México"
+        user_location: str = "Ciudad de México, México"
     ) -> List[Dict[str, Any]]:
         if not keywords:
             keywords = ["Full Stack", "Backend", "Frontend", "Desarrollador"]
 
         fromage_days = max(1, int(round(max_hours / 24.0)))
-        primary_local = user_location.split(",")[0].strip() if user_location else "Baja California"
+        primary_local = user_location.split(",")[0].strip() if user_location else "México"
 
         jobs = []
-        search_terms = keywords[:5]
-        locations = ["Remoto", "Mexico", primary_local]
+        search_terms = keywords[:10]
+        locations = ["Remoto", "Mexico"]
+        if primary_local and primary_local.lower() not in ["mexico", "méxico", "remoto"]:
+            locations.append(primary_local)
 
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=True)

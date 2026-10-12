@@ -108,8 +108,9 @@ class AITriageAgent:
         self,
         job: Dict[str, Any],
         user_english_level: str = "Español / Básico",
-        user_location: str = "Ensenada, Baja California",
-        target_roles: str = "Full Stack, Backend, Frontend, Software Engineer"
+        user_location: str = "Ciudad de México, México",
+        target_roles: str = "Full Stack, Backend, Frontend, Software Engineer",
+        modality_pref: str = "Solo Remoto"
     ) -> JobTriageResult:
         """
         Evalúa y clasifica de forma estricta la vacante analizando modalidad real, idioma y compatibilidad.
@@ -124,6 +125,9 @@ class AITriageAgent:
             job_modality_hint = job.get("modality", "")
 
             is_spanish_only_user = "español" in user_english_level.lower() or "espanol" in user_english_level.lower() or "básico" in user_english_level.lower() or "basico" in user_english_level.lower()
+            is_strict_remote = modality_pref == "Solo Remoto"
+
+            modality_rule = 'b) Debe ser ESTRICTAMENTE 100% Remoto permanente ("REMOTE"). Si es Híbrido, Presencial o requiere oficinas físicas -> is_match_for_user = false.' if is_strict_remote else f'b) Es 100% Remoto ("REMOTE") O Presencial en {user_location} ("ONSITE_LOCAL").'
 
             prompt = f"""Eres un Evaluador y Reclutador Técnico Senior de Software.
 Tu misión es clasificar esta vacante con CERO ERRORES y TOTAL PRECISIÓN:
@@ -141,10 +145,10 @@ Tu misión es clasificar esta vacante con CERO ERRORES y TOTAL PRECISIÓN:
 3. COMPATIBILIDAD CON EL CANDIDATO (is_match_for_user):
    - True SOLO SI:
      a) Es un rol técnico de Software/TI (is_software_role = true).
-     b) Es 100% Remoto ("REMOTE") O Presencial en {user_location} ("ONSITE_LOCAL").
-     {"c) detected_language es 'SPANISH' y NO exige inglés C1/C2." if is_spanish_only_user else "c) Aceptable en inglés o español."}
+     {modality_rule}
+     c) NO exige inglés avanzado C1/C2, fluido o nativo (Aceptable si está redactada en español o inglés técnico/intermedio B2).
    - Si es Híbrido o Presencial en otra ciudad -> is_match_for_user = false.
-   - {"Si está en inglés -> is_match_for_user = false." if is_spanish_only_user else ""}
+   - Si exige inglés avanzado, fluido conversacional o bilingüe estricto -> is_match_for_user = false.
 
 OFERTA A EVALUAR:
 - Título: {title}
@@ -173,9 +177,34 @@ Devuelve ÚNICAMENTE un JSON válido con esta estructura:
 
             loop = asyncio.get_event_loop()
 
-            # 1. Intentar con Groq / Try Groq
+            # Proveedor preferente según configuración
+            preferred_provider = getattr(settings, "LLM_PROVIDER", "openrouter").lower()
+
+            # 1. Si el proveedor configurado es OpenRouter (o por defecto), intentar primero con OpenRouter
+            if preferred_provider == "openrouter" and self.openrouter_client:
+                try:
+                    def _call_openrouter():
+                        response = self.openrouter_client.chat.completions.create(
+                            model="meta-llama/llama-3.1-8b-instruct",
+                            messages=[
+                                {"role": "system", "content": "Eres un evaluador de vacantes de software que responde exclusivamente en JSON válido."},
+                                {"role": "user", "content": prompt}
+                            ],
+                            max_tokens=700,
+                            temperature=0.1
+                        )
+                        return response.choices[0].message.content
+
+                    raw_text = await loop.run_in_executor(None, _call_openrouter)
+                    cleaned = raw_text.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+                    data = json.loads(cleaned)
+                    return self._build_result_from_dict(data, location, company, is_spanish_only_user, title, description)
+                except Exception:
+                    pass
+
+            # 2. Intentar con Groq
             if self.groq_client:
-                for model_name in ["llama-3.1-8b-instant", "llama-3.3-70b-versatile"]:
+                for model_name in ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"]:
                     try:
                         def _call_groq():
                             response = self.groq_client.chat.completions.create(
@@ -191,12 +220,12 @@ Devuelve ÚNICAMENTE un JSON válido con esta estructura:
 
                         raw_text = await loop.run_in_executor(None, _call_groq)
                         data = json.loads(raw_text.strip())
-                        return self._build_result_from_dict(data, location, company, is_spanish_only_user)
+                        return self._build_result_from_dict(data, location, company, is_spanish_only_user, title, description)
                     except Exception:
                         await asyncio.sleep(0.3)
                         continue
 
-            # 2. Intentar con Google Gemini / Try Gemini
+            # 3. Intentar con Google Gemini
             if self.gemini_client:
                 for gemini_model in ["gemini-2.5-flash", "gemini-1.5-flash"]:
                     try:
@@ -211,15 +240,15 @@ Devuelve ÚNICAMENTE un JSON válido con esta estructura:
                         raw_text = await loop.run_in_executor(None, _call_gemini)
                         cleaned = raw_text.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
                         data = json.loads(cleaned)
-                        return self._build_result_from_dict(data, location, company, is_spanish_only_user)
+                        return self._build_result_from_dict(data, location, company, is_spanish_only_user, title, description)
                     except Exception:
                         await asyncio.sleep(0.3)
                         continue
 
-            # 3. Intentar con OpenRouter / Try OpenRouter
+            # 4. Fallback OpenRouter si no era preferido o si los anteriores fallaron
             if self.openrouter_client:
                 try:
-                    def _call_openrouter():
+                    def _call_openrouter_backup():
                         response = self.openrouter_client.chat.completions.create(
                             model="meta-llama/llama-3.1-8b-instruct",
                             messages=[
@@ -231,15 +260,15 @@ Devuelve ÚNICAMENTE un JSON válido con esta estructura:
                         )
                         return response.choices[0].message.content
 
-                    raw_text = await loop.run_in_executor(None, _call_openrouter)
+                    raw_text = await loop.run_in_executor(None, _call_openrouter_backup)
                     cleaned = raw_text.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
                     data = json.loads(cleaned)
-                    return self._build_result_from_dict(data, location, company, is_spanish_only_user)
+                    return self._build_result_from_dict(data, location, company, is_spanish_only_user, title, description)
                 except Exception:
                     pass
 
-            # 4. Fallback Heurístico Robusto / Robust Heuristic Fallback
-            return self._heuristic_fallback(job, title, description, location, company, is_spanish_only_user, user_location)
+            # 5. Fallback Heurístico Robusto / Robust Heuristic Fallback
+            return self._heuristic_fallback(job, title, description, location, company, is_spanish_only_user, user_location, is_strict_remote)
 
     def _build_result_from_dict(
         self,
@@ -260,8 +289,9 @@ Devuelve ÚNICAMENTE un JSON válido con esta estructura:
         if lang not in ["SPANISH", "ENGLISH"]:
             lang = detect_text_language(description, title).upper()
 
+        from src.scrapers.filters import requires_advanced_english
         is_match = bool(data.get("is_match_for_user", True))
-        if is_spanish_only_user and lang == "ENGLISH":
+        if requires_advanced_english(f"{title} {description}"):
             is_match = False
 
         score = data.get("match_percentage", 90)
@@ -298,7 +328,8 @@ Devuelve ÚNICAMENTE un JSON válido con esta estructura:
         location: str,
         company: str,
         is_spanish_only_user: bool,
-        user_location: str = "Ensenada, Baja California"
+        user_location: str = "Ciudad de México, México",
+        is_strict_remote: bool = False
     ) -> JobTriageResult:
         from src.scrapers.filters import is_disallowed_non_software_role, detect_job_modality, detect_text_language, requires_advanced_english
         
@@ -308,18 +339,24 @@ Devuelve ÚNICAMENTE un JSON válido con esta estructura:
         has_adv_eng = requires_advanced_english(f"{title} {description}")
         detected_lang = detect_text_language(description, title).upper()
         
-        is_match = (not is_bad_role) and (code_mod in ["remote", "onsite_local"])
+        if is_strict_remote:
+            is_match = (not is_bad_role) and (code_mod == "remote")
+        else:
+            is_match = (not is_bad_role) and (code_mod in ["remote", "onsite_local"])
         rejection_reason = ""
 
         if is_bad_role:
             is_match = False
             rejection_reason = "Rol no relacionado con software/TI"
+        elif is_strict_remote and code_mod != "remote":
+            is_match = False
+            rejection_reason = f"No es 100% Remoto (detectado: {code_mod})"
         elif code_mod in ["onsite_relocate", "hybrid"]:
             is_match = False
             rejection_reason = f"Requiere trabajo presencial/híbrido en otra ciudad ({location})"
-        elif is_spanish_only_user and (detected_lang == "ENGLISH" or has_adv_eng):
+        elif has_adv_eng:
             is_match = False
-            rejection_reason = "Vacante en inglés o requiere inglés avanzado C1"
+            rejection_reason = "Exige inglés avanzado o bilingüe C1/C2"
 
         real_mod_map = {
             "remote": "REMOTE",

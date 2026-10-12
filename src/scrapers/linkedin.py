@@ -14,7 +14,7 @@ class LinkedInPlaywrightScraper:
         self,
         keywords: List[str] = None,
         max_hours: float = 72.0,
-        user_location: str = "Baja California, México"
+        user_location: str = "Ciudad de México, México"
     ) -> List[Dict[str, Any]]:
         if not keywords:
             keywords = ["Full Stack", "Backend", "Frontend", "Software Engineer"]
@@ -24,15 +24,16 @@ class LinkedInPlaywrightScraper:
         tpr_param = f"&f_TPR=r{tpr_seconds}"
 
         # Extraer primer término de ubicación local limpia
-        primary_local = user_location.split(",")[0].strip() if user_location else "Baja California"
+        primary_local = user_location.split(",")[0].strip() if user_location else "México"
 
         jobs = []
-        search_terms = keywords[:5]
+        search_terms = keywords[:10]
         search_configs = [
-            ("Nacional (Presencial y General)", "Mexico", ""),
             ("100% Remoto", "Mexico", "&f_WT=2"),
-            (f"Local ({primary_local})", primary_local, "")
+            ("Nacional Remoto", "Mexico", "")
         ]
+        if primary_local and primary_local.lower() not in ["mexico", "méxico", "remoto"]:
+            search_configs.append((f"Presencial/Híbrido {primary_local}", primary_local, ""))
 
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=True)

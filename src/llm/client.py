@@ -88,7 +88,7 @@ def _build_rich_experiences(user_profile: dict, target_lang: str, role_type: str
     for exp in raw_exps:
         company = exp.get("company", "Empresa")
         period = exp.get("period", "2025 – Presente")
-        location = exp.get("location", "Ensenada, B.C., México")
+        location = exp.get("location", "México")
         original_bullets = exp.get("bullet_points", [])
         original_role = exp.get("role", "Software Engineer")
         
@@ -323,6 +323,26 @@ class LLMClient:
             job_description=clean_desc
         )
 
+        # 0. OPENROUTER (Si es el proveedor preferido)
+        if self.provider == "openrouter" and self.has_valid_openrouter and self.openrouter_client:
+            try:
+                print(f"[LLMClient] Adaptando ATS con OpenRouter Llama-3.1-8B [{target_lang.upper()}]...")
+                response = self.openrouter_client.chat.completions.create(
+                    model="meta-llama/llama-3.1-8b-instruct",
+                    messages=[
+                        {"role": "system", "content": SYSTEM_PROMPT},
+                        {"role": "user", "content": user_prompt}
+                    ],
+                    max_tokens=2048,
+                    temperature=0.2
+                )
+                raw_json = response.choices[0].message.content
+                res = _parse_and_fix_llm_json(raw_json, target_lang, role_type, user_profile)
+                await asyncio.sleep(0.3)
+                return res
+            except Exception as e:
+                print(f"[LLMClient] Advertencia OpenRouter: {e}")
+
         # 1. GROQ MODEL 1: llama-3.1-8b-instant
         if self.has_valid_groq and self.groq_client:
             try:
@@ -389,10 +409,10 @@ class LLMClient:
                 except Exception as e:
                     print(f"[LLMClient] Advertencia Gemini ({gemini_model}): {e}")
 
-        # 4. OPENROUTER MODEL: meta-llama/llama-3.1-8b-instruct
+        # 4. OPENROUTER MODEL (Respaldo si no era preferido)
         if self.has_valid_openrouter and self.openrouter_client:
             try:
-                print(f"[LLMClient] Adaptando ATS con OpenRouter Llama-3.1-8B [{target_lang.upper()}]...")
+                print(f"[LLMClient] Adaptando ATS con OpenRouter Llama-3.1-8B (Respaldo) [{target_lang.upper()}]...")
                 response = self.openrouter_client.chat.completions.create(
                     model="meta-llama/llama-3.1-8b-instruct",
                     messages=[

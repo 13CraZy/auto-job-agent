@@ -40,7 +40,7 @@ class Settings(BaseSettings):
     # ============================================================
     # FILTROS Y VENTANAS DE TIEMPO / FILTERS & TIME WINDOWS
     # ============================================================
-    MAX_HOURS_OLD: float = 72.0
+    MAX_HOURS_OLD: float = 168.0
     DEFAULT_COUNTRY: str = "Mexico"
     
     # ============================================================

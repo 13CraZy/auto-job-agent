@@ -140,15 +140,30 @@ class CLIWizard:
         console.print("  [bold cyan]2.[/bold cyan] Últimas 24 horas (1 día)")
         console.print("  [bold cyan]3.[/bold cyan] Últimas 36 horas")
         console.print("  [bold cyan]4.[/bold cyan] Últimas 48 horas (2 días)")
-        console.print("  [bold cyan]5.[/bold cyan] Últimas 72 horas (3 días - [bold green]Recomendado[/bold green])")
+        console.print("  [bold cyan]5.[/bold cyan] Últimas 72 horas (3 días)")
+        console.print("  [bold cyan]6.[/bold cyan] Últimos 7 días (168 horas - [bold green]Recomendado semanal[/bold green])")
         
         hours_raw = Prompt.ask(
-            "Selecciona la opción deseada (1-5 o ingresa el número de horas)",
-            default="5"
+            "Selecciona la opción deseada (1-6 o ingresa el número de horas)",
+            default="6"
         )
         
-        hours_map = {"1": 12.0, "2": 24.0, "3": 36.0, "4": 48.0, "5": 72.0, "12": 12.0, "24": 24.0, "36": 36.0, "48": 48.0, "72": 72.0}
-        max_hours = hours_map.get(hours_raw.strip(), 72.0)
+        hours_map = {
+            "1": 12.0, "2": 24.0, "3": 36.0, "4": 48.0, "5": 72.0, "6": 168.0,
+            "12": 12.0, "24": 24.0, "36": 36.0, "48": 48.0, "72": 72.0, "120": 120.0, "168": 168.0,
+            "7": 168.0, "7d": 168.0, "7dias": 168.0
+        }
+        val_clean = hours_raw.strip().lower().replace("h", "").replace("horas", "").replace("dias", "").replace("d", "").strip()
+        if hours_raw.strip().lower() in hours_map:
+            max_hours = hours_map[hours_raw.strip().lower()]
+        elif val_clean in hours_map:
+            max_hours = hours_map[val_clean]
+        else:
+            try:
+                parsed_val = float(val_clean)
+                max_hours = parsed_val * 24.0 if parsed_val <= 30 and parsed_val <= 14 else parsed_val
+            except ValueError:
+                max_hours = 168.0
 
         # ------------------------------------------------------------
         # PASO 3: MODALIDAD, ESTADO Y SALARIO
@@ -175,10 +190,10 @@ class CLIWizard:
         else:
             modality_pref = "Cualquiera"
 
-        user_location = saved_prefs.get("user_location", "Ensenada, Tijuana, Baja California")
+        user_location = saved_prefs.get("user_location", "Ciudad de México, CDMX")
         if modality_pref != "Solo Remoto":
             user_location = Prompt.ask(
-                "Ingresa tu Ciudad y Estado de residencia (separados por coma)",
+                "Ingresa tu Ciudad y Estado de residencia en México (ej: CDMX, Guadalajara, Monterrey, Tijuana)",
                 default=user_location
             )
 

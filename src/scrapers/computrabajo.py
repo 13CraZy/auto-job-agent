@@ -48,25 +48,29 @@ class ComputrabajoPlaywrightScraper:
         self,
         keywords: List[str] = None,
         max_hours: float = 72.0,
-        user_location: str = "Baja California, México"
+        user_location: str = "Ciudad de México, México"
     ) -> List[Dict[str, Any]]:
         if not keywords:
             keywords = ["Desarrollador Full Stack", "Desarrollador Backend", "Desarrollador Frontend", "Software Engineer"]
 
-        primary_local = user_location.split(",")[0].strip().lower().replace(" ", "-") if user_location else "baja-california"
+        primary_local = user_location.split(",")[0].strip().lower().replace(" ", "-") if user_location else "mexico"
 
         jobs = []
-        search_terms = keywords[:5]
+        search_terms = keywords[:10]
 
-        # Rutas estratégicas: 100% Desde Casa, Local en la ubicación del usuario, y Búsqueda Remoto general
+        # Rutas estratégicas: 100% Desde Casa y Búsqueda Remoto general
         query_configs = []
         for kw in search_terms:
-            slug = kw.lower().replace(" ", "-").replace("ñ", "n").replace("desarrollador-", "")
+            slug = kw.lower().replace(" ", "-").replace("ñ", "n").replace("desarrollador-", "").replace("developer-", "")
             kw_encoded = quote(kw)
             
             query_configs.append((f"{kw} [100% Desde Casa]", f"{self.base_url}/trabajo-de-{slug}-en-desde-casa", "remote"))
-            query_configs.append((f"{kw} [Local: {primary_local}]", f"{self.base_url}/empleos-en-{primary_local}?q={kw_encoded}", "onsite_local"))
             query_configs.append((f"{kw} [Remoto General]", f"{self.base_url}/empleos-en-mexico?q={kw_encoded}+remoto", "remote"))
+
+        if primary_local and primary_local not in ["mexico", "remoto", "desde-casa"]:
+            for kw in search_terms[:2]:
+                slug = kw.lower().replace(" ", "-").replace("ñ", "n").replace("desarrollador-", "").replace("developer-", "")
+                query_configs.append((f"{kw} [{primary_local.capitalize()}]", f"{self.base_url}/trabajo-de-{slug}-en-{primary_local}", "onsite"))
 
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=True)

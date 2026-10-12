@@ -74,8 +74,32 @@ Ejemplo de formato:
 }}"""
 
         loop = asyncio.get_event_loop()
+        preferred_provider = getattr(settings, "LLM_PROVIDER", "openrouter").lower()
 
-        # 1. Intentar con Groq
+        # 1. Intentar con OpenRouter si es el proveedor preferido
+        if preferred_provider == "openrouter" and self.openrouter_client:
+            try:
+                def _call_openrouter():
+                    res = self.openrouter_client.chat.completions.create(
+                        model="meta-llama/llama-3.1-8b-instruct",
+                        messages=[
+                            {"role": "system", "content": "Responde exclusivamente en JSON válido."},
+                            {"role": "user", "content": prompt}
+                        ],
+                        max_tokens=500,
+                        temperature=0.2
+                    )
+                    return res.choices[0].message.content
+
+                raw_json = await loop.run_in_executor(None, _call_openrouter)
+                cleaned = raw_json.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
+                data = json.loads(cleaned)
+                if "keywords" in data and isinstance(data["keywords"], list) and len(data["keywords"]) > 0:
+                    return data["keywords"][:10]
+            except Exception:
+                pass
+
+        # 2. Intentar con Groq
         if self.groq_client:
             for model_name in ["llama-3.3-70b-versatile", "llama-3.1-8b-instant"]:
                 try:
@@ -98,7 +122,7 @@ Ejemplo de formato:
                 except Exception:
                     continue
 
-        # 2. Intentar con Google Gemini
+        # 3. Intentar con Google Gemini
         if self.gemini_client:
             for gemini_model in ["gemini-2.5-flash", "gemini-1.5-flash"]:
                 try:
@@ -118,10 +142,10 @@ Ejemplo de formato:
                 except Exception:
                     continue
 
-        # 3. Intentar con OpenRouter
+        # 4. Intentar con OpenRouter como respaldo
         if self.openrouter_client:
             try:
-                def _call_openrouter():
+                def _call_openrouter_backup():
                     res = self.openrouter_client.chat.completions.create(
                         model="meta-llama/llama-3.1-8b-instruct",
                         messages=[
@@ -133,7 +157,7 @@ Ejemplo de formato:
                     )
                     return res.choices[0].message.content
 
-                raw_json = await loop.run_in_executor(None, _call_openrouter)
+                raw_json = await loop.run_in_executor(None, _call_openrouter_backup)
                 cleaned = raw_json.strip().removeprefix("```json").removeprefix("```").removesuffix("```").strip()
                 data = json.loads(cleaned)
                 if "keywords" in data and isinstance(data["keywords"], list) and len(data["keywords"]) > 0:
